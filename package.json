@@ -2,7 +2,7 @@
   "name": "loftnode",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "01/index.js",
   "dependencies": {
     "eslint": "^5.13.0",
     "eslint-config-standard": "^12.0.0",
