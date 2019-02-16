@@ -5,6 +5,8 @@ const argv = require('yargs')
   .example('node index.js --entry input --output output')
   .describe('entry', 'Entry path')
   .describe('output', 'Output path')
+  .describe('delete', 'Delete entry folder after copying files')
+  .default('output', 'output')
   .demandOption(['entry'])
   .argv;
 
@@ -46,7 +48,8 @@ function getCategories (srcDir, cb) {
   return result;
 }
 
-function copyFiles (data, distDir) {
+function copyFiles (data, distDir, cb) {
+  let filesCount = Object.keys(data).reduce((acc, key) => acc + data[key].length, 0);
   let outputRootDir = path.join(__dirname, distDir);
 
   fs.mkdir(outputRootDir, (err) => {
@@ -58,9 +61,11 @@ function copyFiles (data, distDir) {
         if (err) throw err;
         let items = data[key];
         items.forEach(item => {
-          fs.copyFileSync(item.fullPath, path.join(letterDir, item.filename), err => {
-            if (err) throw err;
-          });
+          fs.copyFileSync(item.fullPath, path.join(letterDir, item.filename));
+          filesCount--;
+          if (filesCount <= 0) {
+            cb && cb();
+          }
         });
       });
     });
@@ -68,14 +73,21 @@ function copyFiles (data, distDir) {
 }
 
 function start () {
-  let entry = argv.entry || 'input';
-  let output = argv.output || 'output';
+  let entry = argv.entry;
+  let output = argv.output;
+  let shouldDelete = !!argv.delete;
 
   getCategories(entry, categories => {
     if (!categories) return;
 
     rimraf(path.join(__dirname, output), () => {
-      copyFiles(categories, output);
+      copyFiles(categories, output, () => {
+        if (shouldDelete) {
+          rimraf(path.join(__dirname, entry), () => {
+            // done
+          });
+        }
+      });
     });
   });
 }
