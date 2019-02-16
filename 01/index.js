@@ -1,18 +1,12 @@
 const path = require('path');
 const fs = require('fs');
 const rimraf = require('rimraf');
-
-function parseArgs (argv) {
-  let args = argv
-    .slice(2)
-    .map(item => item.split('='));
-
-  let result = {};
-  args.forEach(item => {
-    result[item[0]] = item[1];
-  });
-  return result;
-}
+const argv = require('yargs')
+  .example('node index.js --entry input --output output')
+  .describe('entry', 'Entry path')
+  .describe('output', 'Output path')
+  .demandOption(['entry'])
+  .argv;
 
 function getCategories (srcDir, cb) {
   let result = {};
@@ -74,13 +68,14 @@ function copyFiles (data, distDir) {
 }
 
 function start () {
-  let config = parseArgs(process.argv);
+  let entry = argv.entry || 'input';
+  let output = argv.output || 'output';
 
-  getCategories(config.src, categories => {
+  getCategories(entry, categories => {
     if (!categories) return;
 
-    rimraf(path.join(__dirname, config.dist), () => {
-      copyFiles(categories, config.dist);
+    rimraf(path.join(__dirname, output), () => {
+      copyFiles(categories, output);
     });
   });
 }
