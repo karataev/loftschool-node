@@ -8,7 +8,10 @@ const argv = require('yargs')
   .demandOption(['interval', 'time'])
   .argv;
 
+const PORT = 8080;
+
 function startServer(interval, time) {
+  console.log(`Launching server on port ${PORT}...`);
   http.createServer((req, res) => {
     if (req.url === '/') {
       let intervalId = setInterval(() => {
@@ -26,7 +29,7 @@ function startServer(interval, time) {
       res.end();
     }
 
-  }).listen(8080);
+  }).listen(PORT);
 }
 
 startServer(argv.interval, argv.time);
